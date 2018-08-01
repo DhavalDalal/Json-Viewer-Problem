@@ -5,7 +5,7 @@
 * default is ```-pretty=yes``` or simply ```-pretty```
 
 <center>
-  <img src="pretty-json.png" alt="Console Output" style="width: 200px;"/>
+  <img src="pretty-json.png" alt="Console Output" width="200" height="350"/>
 </center>
 
 ## Creating Eclipse and Idea Project files, Building and Running.

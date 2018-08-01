@@ -1,0 +1,205 @@
+plugins {
+  id 'java'
+  id 'eclipse'
+  id 'idea'
+  id 'application'
+}
+
+eclipse {
+  classpath {
+    downloadJavadoc = true
+    downloadSources = true
+  }
+}
+
+idea {
+  module {
+    downloadJavadoc = true
+    downloadSources = true
+  }
+}
+
+repositories {
+  jcenter()
+  mavenCentral()
+}
+
+defaultTasks 'clean', 'test', 'build'
+
+project.group = 'tsys-shell'
+// This is the name of the module
+ext.moduleName = 'com.tsys.viewer'
+ext.moduleVersion = '1.0'
+ext.jarVersion = '1.0-SNAPSHOT'
+version = jarVersion
+archivesBaseName = moduleName
+// Define the main class for the application
+mainClassName = 'com.tsys.viewer.Main'
+ext.junit4Version         = '4.12'
+ext.junitVintageVersion   = '5.2.0'
+ext.junitPlatformVersion  = '1.2.0'
+ext.junitJupiterVersion   = '5.2.0'
+ext.log4jVersion          = '2.6.2'
+ext.logbackVersion        = '1.2.3'
+ext.mockitoVersion        = '2.20.0'
+
+dependencies {
+  // This dependency is found on compile classpath of this component and consumers.
+  compile('org.json:json:20180130')
+  // An easy syntax to print messages with a colored font/background. 
+  // Also includes ∞ levels of debug logging.
+  compile ('com.diogonunes:JCDP:2.0.3.1')
+  // Commons CLI
+  compile ('commons-cli:commons-cli:1.4')
+  
+  // If you also want to support JUnit 3 and JUnit 4 tests
+	testCompileOnly("junit:junit:${junit4Version}")
+	// JUnit Jupiter API and TestEngine implementation
+	testImplementation("org.junit.jupiter:junit-jupiter-api:${junitJupiterVersion}")
+	testRuntimeOnly(
+			"org.junit.jupiter:junit-jupiter-engine:${junitJupiterVersion}",
+			"org.junit.vintage:junit-vintage-engine:${junitVintageVersion}"
+	)
+
+	testCompile("org.junit.platform:junit-platform-runner:${junitPlatformVersion}")
+  testCompile("org.junit.jupiter:junit-jupiter-params:${junitJupiterVersion}")
+	testCompile ("org.mockito:mockito-core:${mockitoVersion}")
+	testCompile ("org.mockito:junit-jupiter:${mockitoVersion}")
+	testRuntime("org.junit.platform:junit-platform-launcher:${junitPlatformVersion}")
+	testRuntime("org.junit.jupiter:junit-jupiter-engine:${junitJupiterVersion}")
+	testRuntime("org.junit.vintage:junit-vintage-engine:${junitVintageVersion}")
+	testRuntime("org.apache.logging.log4j:log4j-core:${log4jVersion}")
+}
+
+compileJava {
+	inputs.property("moduleName", moduleName)
+	
+	doFirst {
+    // When compiling a Java9 module, we want to
+		// use --module-path instead of --classpath
+		// to read the dependencies.
+		options.compilerArgs = [
+			'--module-path', classpath.asPath,
+			'-Xlint:unchecked'
+		]
+		
+		// clear the classpath property by creating an
+		// empty collection
+		classpath = files()
+	}
+}
+
+compileTestJava {
+	inputs.property("moduleName", moduleName)
+	doFirst {
+		options.compilerArgs = [
+			'--module-path', classpath.asPath,
+			// Explicitly add junit as automatic jar to
+			// the set of observable modules
+			'--add-modules', 'junit',
+			// Declare that module is read by junit
+			'--add-reads', "$moduleName=junit",
+			// Patch test files with module files
+			'--patch-module', "$moduleName=" + files(sourceSets.test.java.srcDirs).asPath,
+		]
+		classpath = files()
+	}
+}
+
+// Even though Gradle 4.9 has a native support for JUnit 5, this support
+// is not enabled by default. If we want to enable it, we have to ensure
+// that the test task uses JUnit 5 instead of JUnit 4. After we have done
+// this, the source code of our build.gradle file looks as follows:
+//
+ test {
+	 // To use JUL logger use uncomment the lines below
+//	 systemProperty 'java.util.logging.manager', 'org.apache.logging.log4j.jul.LogManager'
+	 inputs.property("moduleName", moduleName)
+	 doFirst {
+		 jvmArgs = [
+				 '--module-path', classpath.asPath,
+				 // use the special ALL-MODULE-PATH
+				 // because the main class of the JVM
+				 // that is running the tests is not a
+				 // part of Java9 module. It is a
+				 // Gradle's test runner, so it declares
+				 // no modules it needs to consume.
+				 // This argument makes all of the modules
+				 // in the module path visible
+				 '--add-modules', 'ALL-MODULE-PATH',
+				 // it is exporting the module/package for junit,,org.junit.platform.commons to access
+         '--add-exports', "$moduleName/$moduleName=junit,org.junit.platform.commons",
+				 '--add-exports', "$moduleName/com.tsys.viewer=junit,org.junit.platform.commons",
+				 // Add for vintage mockito's reflection based field access
+				 '--add-opens', "$moduleName/com.tsys.viewer=junit,org.mockito,org.junit.platform.commons",
+				 // Declare that module is read by junit
+				 '--add-reads', "$moduleName=junit,org.junit.platform.commons,org.junit.jupiter.api",
+				 // Patch test classes to util module classes
+				 '--patch-module', "$moduleName=" + files(sourceSets.test.java.outputDir).asPath,
+		 ]
+		 classpath = files()
+	 }
+	 useJUnitPlatform {
+		 // excludeTags 'slow', 'ci'
+		 includeEngines 'junit-jupiter', 'junit-vintage'
+	 }
+	 testLogging {
+     showStandardStreams = true
+   }
+ }
+
+// The default Jar task won't add --module-version and --hash--modules, so that's why we do this.
+jar.enabled = false // This disables the original, but not the new, jar task.
+
+task jar(type: Exec, dependsOn: test, overwrite: true) {
+	doFirst {
+		new File("${project.buildDir}/libs").mkdirs()
+	}
+
+	commandLine 'jar',
+			'--create',
+			'--verbose',
+			"--file=${project.buildDir}/libs/${moduleName}-${jarVersion}.jar",
+			'--hash-modules', "${moduleVersion}",
+			'--module-path', "${project.buildDir}/libs/${moduleName}-${jarVersion}.jar",
+			"--module-version=${moduleVersion}",
+			"-C", "${project.buildDir}/classes/java/main", "."
+
+	doLast {
+		println '******** Describing Jar **********'
+		exec {
+			commandLine 'jar', '--describe-module',
+					"--file=${project.buildDir}/libs/${moduleName}-${jarVersion}.jar"
+		}
+	}
+}
+
+
+// Re-add jar task dependencies.
+// Needed since we disabled the original jar task.
+assemble.dependsOn jar
+build.dependsOn jar
+
+// Modifying the gradle run task
+run {
+	inputs.property("moduleName", moduleName)
+	doFirst {
+		jvmArgs = [
+				// To run, you can use jar option below or
+//				'-jar', "${jar.archivePath}",
+				// To run, you can use --module-path, but not both.
+				'--module-path', classpath.asPath,
+				'--module', "$moduleName/$mainClassName"
+		]
+		classpath = files()
+	}
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+	classifier = 'sources'
+	from sourceSets.main.allSource
+}
+
+artifacts {
+	archives sourcesJar
+}

@@ -10,7 +10,7 @@
 
 ## Creating Eclipse and Idea Project files, Building and Running.
 
-### Java9 and above
+#### Using Java9 and above
 * To create project Eclipse Project files, run ```gradle -b build9.gradle eclipse``` 
 * To create project Idea Project files, run ```gradle -b build9.gradle idea``` 
 * To build the project execute ```gradle -b build9.gradle``` 
@@ -24,14 +24,14 @@ Once the project is created, you need to add the following to configure it for u
 * Start Eclipse
 * Next, we need to add the dependent jars (in our case, JSON jar, JCDP and Commons CLI) on the module path.  So, go to Project properties, then go to Java Build Path, and under Classpath, expand the twisty for each jar that you want to be a module. You should see a new entry called "Is not modular". Click on it and click the Edit button. Under the Modular properties dialog that opens, check the box "Defines one or more modules". Click OK and it should now say "Is modular" and it will be moved up to Modulepath.
 
-#### Java9 and below
+#### Using Pre-Java9
 * First delete the ```module-info.java``` present in the folder ``src/main/java``
 * To create project Eclipse Project files, run ```gradle eclipse``` 
 * To create project Idea Project files, run ```gradle idea``` 
 * To build the project execute ```gradle``` 
 * To run the project execute ```gradle run``` 
 
-### Using Other languages like Scala, Groovy, Clojure
+#### Using Other languages like Scala, Groovy, Clojure
 * You can appropriately add the gradle plugins as per your choice of language in the ```build.gradle```.
 * Do not forget to delete ```java``  plugin found therein.
 

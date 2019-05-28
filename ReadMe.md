@@ -1,12 +1,18 @@
 # JSON Viewer Problem
 
 ## Example Usage
-* ```view [-style] [-n] [-pretty=no] response.json ```
-* default is ```-pretty=yes``` or simply ```-pretty```
-
+* ```prettyjson -l response.json```
 <center>
   <img src="pretty-json.png" alt="Console Output" width="200" height="350"/>
 </center>
+* default behavior is to print pretty JSON which is indented and colorized.
+* General Command ```prettyjson [-r] [-l] [-h] [-v] [-nc] <file>```
+* Options:
+  * ```h```: Show this help message.
+  * ```v```: Show version info.
+  * ```r```: Show raw Json file (as-is un-indented).
+  * ```l```: Print Line numbers in the output.
+  * ```nc```: Turn colorizing off. 
 
 ## Creating Eclipse and Idea Project files, Building and Running.
 
@@ -39,7 +45,7 @@ Once the project is created, you need to add the following to configure it for u
 When you run this, it invokes, application main class, which just prints ```Json Viewer - Lets Begin Implementing!```
 
 ## Stories Slide Deck
-Stories to be implemented are found on the link [https://www.slideshare.net/DhavalDalal/json-viewer-stories](https://www.slideshare.net/DhavalDalal/json-viewer-stories)
+Stories to be implemented are found on the [Slideshare - Json Viewer](https://www.slideshare.net/DhavalDalal/json-viewer-stories-147956873)
 
 
 ## Project Dependencies
@@ -50,6 +56,7 @@ Stories to be implemented are found on the link [https://www.slideshare.net/Dhav
 ## Releasing
 * Make sure, all your tests run, before releasing your solution.
 * It should not happen, that they run only on your machine ;)
-* A batch file ```view.bat``` for Windows and ```view.sh``` for Linux based platforms must be included.  This will call Java and pass command line args to it.  If you are using Java9, you need not do this, instead simply use ```JLink``` and produce a custom executable with the name ```view```. 
+* A batch file ```prettyjson.bat``` for Windows and ```prettyjson``` for Linux based platforms must be included.  By default, the gradle build produces these scripts. This will call Java and pass command line args to it.  
+* NOTE: If you are using Java9, you need not do this, instead simply use ```JLink``` and produce a custom executable with the name ```prettyjson```. 
 
 

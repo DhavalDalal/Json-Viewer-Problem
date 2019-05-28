@@ -24,7 +24,7 @@ repositories {
   mavenCentral()
 }
 
-defaultTasks 'clean', 'test', 'build'
+defaultTasks 'clean', 'test', 'build', 'startScripts'
 
 archivesBaseName = 'com.tsys.viewer'
 version = '1.0-SNAPSHOT'

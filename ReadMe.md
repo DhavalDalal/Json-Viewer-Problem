@@ -5,6 +5,7 @@
 <center>
   <img src="pretty-json.png" alt="Console Output" width="200" height="350"/>
 </center>
+
 * default behavior is to print pretty JSON which is indented and colorized.
 * General Command ```prettyjson [-r] [-l] [-h] [-v] [-nc] <file>```
 * Options:
